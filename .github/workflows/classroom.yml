@@ -28,12 +28,12 @@ jobs:
 
     - name: Run correct solution query (hidden from students)
       run: |
-        echo "${{ secrets.CORRECT_QUERY }}" | mysql -h 127.0.0.1 -u root -proot test_db > correct_output.txt
+        echo "${{ secrets.CORRECT_QUERY }}" | mysql -h 127.0.0.1 -u root -proot test_db --skip-column-names > correct_output.txt
 
     - name: Run student query
       run: |
-        mysql -h 127.0.0.1 -u root -proot test_db < student_submission.sql > student_output.txt
+        mysql -h 127.0.0.1 -u root -proot test_db --skip-column-names < student_submission.sql > student_output.txt
 
-    - name: Compare outputs
+    - name: Compare outputs (Ignore headers)
       run: |
         diff -w correct_output.txt student_output.txt && echo "✅ Test geslaagd! De output is correct." || (echo "❌ Fout: De output komt niet overeen met de verwachte oplossing."; exit 1)
