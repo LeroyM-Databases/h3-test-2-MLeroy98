@@ -26,24 +26,14 @@ jobs:
       run: |
         mysql -h 127.0.0.1 -u root -proot test_db < setup.sql
 
+    - name: Run correct solution query (hidden from students)
+      run: |
+        echo "${{ secrets.CORRECT_QUERY }}" | mysql -h 127.0.0.1 -u root -proot test_db > correct_output.txt
+
     - name: Run student query
       run: |
-        mysql -h 127.0.0.1 -u root -proot test_db < student_submission.sql > output.txt
+        mysql -h 127.0.0.1 -u root -proot test_db < student_submission.sql > student_output.txt
 
-    - name: Check output
+    - name: Compare outputs
       run: |
-        EXPECTED_OUTPUT="Alice 22
-Charlie 25
-Emma 21"
-
-        ACTUAL_OUTPUT=$(tail -n +2 output.txt | awk '{print $1, $2}')
-
-        if [ "$ACTUAL_OUTPUT" != "$EXPECTED_OUTPUT" ]; then
-          echo "❌ Fout: Verwachte output:"
-          echo "$EXPECTED_OUTPUT"
-          echo "Maar kreeg:"
-          echo "$ACTUAL_OUTPUT"
-          exit 1
-        else
-          echo "✅ Test geslaagd! De query is correct."
-        fi
+        diff -w correct_output.txt student_output.txt && echo "✅ Test geslaagd! De output is correct." || (echo "❌ Fout: De output komt niet overeen met de verwachte oplossing."; exit 1)
